@@ -1,7 +1,6 @@
 import streamlit as st
 import json
 import pandas as pd
-from io import BytesIO
 
 def extract_lat_lon_with_velocity(data_json):
     gps_data = []
@@ -21,17 +20,6 @@ def extract_lat_lon_with_velocity(data_json):
     df['Speed_Mph'] = df['Speed_Kph'].apply(lambda x: x * 0.621371 if pd.notnull(x) else None)
     return df
 
-def to_excel_bytes(df):
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df.to_excel(writer, index=False, sheet_name='GPS Data')
-        writer.save()
-    processed_data = output.getvalue()
-    return processed_data
-
-def to_csv_bytes(df):
-    return df.to_csv(index=False).encode('utf-8')
-
 st.title("Lat/Lon + Speed/Bearing Extractor")
 
 uploaded_file = st.file_uploader("Upload JSON file", type=["json"])
@@ -47,19 +35,11 @@ if uploaded_file is not None:
         else:
             st.dataframe(df)
 
-            excel_bytes = to_excel_bytes(df)
-            csv_bytes = to_csv_bytes(df)
+            csv_data = df.to_csv(index=False).encode('utf-8')
 
             st.download_button(
-                label="Download Excel file",
-                data=excel_bytes,
-                file_name="extracted_gps_data.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
-            
-            st.download_button(
                 label="Download CSV file",
-                data=csv_bytes,
+                data=csv_data,
                 file_name="extracted_gps_data.csv",
                 mime="text/csv"
             )
