@@ -29,6 +29,9 @@ def to_excel_bytes(df):
     processed_data = output.getvalue()
     return processed_data
 
+def to_csv_bytes(df):
+    return df.to_csv(index=False).encode('utf-8')
+
 st.title("Lat/Lon + Speed/Bearing Extractor")
 
 uploaded_file = st.file_uploader("Upload JSON file", type=["json"])
@@ -45,12 +48,20 @@ if uploaded_file is not None:
             st.dataframe(df)
 
             excel_bytes = to_excel_bytes(df)
+            csv_bytes = to_csv_bytes(df)
 
             st.download_button(
                 label="Download Excel file",
                 data=excel_bytes,
                 file_name="extracted_gps_data.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+            
+            st.download_button(
+                label="Download CSV file",
+                data=csv_bytes,
+                file_name="extracted_gps_data.csv",
+                mime="text/csv"
             )
     except Exception as e:
         st.error(f"Error processing file: {e}")
